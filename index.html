@@ -210,11 +210,7 @@
             min-height: 25px;
             transition: color 0.3s ease;
         }
-        .congrats-message {
-            color: var(--success-color); 
-            font-size: 1.5em;
-            line-height: 1.4;
-        }
+        
         canvas {
             position: fixed;
             top: 0;
@@ -222,19 +218,47 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 1000;
+            z-index: 1000; /* Lớp pháo hoa */
         }
-        .start-screen, .congrats-screen {
+        .start-screen {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 20px;
         }
+        
+        /* **UPDATE**: CSS cho màn hình kết quả cuối cùng */
+        .congrats-screen {
+            display: none; /* Ẩn ban đầu */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            position: fixed; /* Hiển thị đè lên trên mọi thứ */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Lớp phủ mờ để làm nổi bật chữ */
+            z-index: 1001; /* Nằm trên lớp pháo hoa */
+        }
+
+        .congrats-message {
+            color: var(--white-color);
+            font-size: clamp(1.8em, 5vw, 3em);
+            font-weight: 700;
+            line-height: 1.4;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7); /* Đổ bóng cho chữ dễ đọc */
+            padding: 0 20px;
+        }
+
         #startBtn, #playAgainBtn {
             padding: 18px 45px;
             font-size: 1.3em;
             background: var(--success-color);
             border-radius: 16px;
+            border: 2px solid var(--white-color); /* Thêm viền trắng để nổi bật */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         #startBtn:hover, #playAgainBtn:hover {
             background: #1e7e34;
@@ -248,9 +272,8 @@
     </style>
 </head>
 <body>
-    <canvas id="fireworks"></canvas>
-
-    <div class="container">
+    <!-- **UPDATE**: Bỏ container ra khỏi màn hình chúc mừng -->
+    <div class="container" id="gameContainer">
         <div class="game-title">NGHE VÀ XẾP TỪ THÀNH CÂU</div>
         <div class="game-subtitle">(Chủ đề: Câu giao tiếp cơ bản)</div>
 
@@ -269,12 +292,16 @@
             </div>
             <div class="score" id="score"></div>
         </div>
-
-        <div class="congrats-screen" id="congratsScreen" style="display: none;">
-            <div class="congrats-message" id="congratsMessage"></div>
-            <button id="playAgainBtn">Chơi lại</button>
-        </div>
     </div>
+    
+    <canvas id="fireworks"></canvas>
+    
+    <!-- **UPDATE**: Màn hình chúc mừng nằm riêng bên ngoài -->
+    <div class="congrats-screen" id="congratsScreen">
+        <div class="congrats-message" id="congratsMessage"></div>
+        <button id="playAgainBtn">Chơi lại</button>
+    </div>
+
 
     <script>
     // --- DATA ---
@@ -344,6 +371,7 @@
 
     // --- DOM Elements ---
     const elements = {
+        gameContainer: document.getElementById('gameContainer'), // **UPDATE**
         startScreen: document.getElementById('startScreen'),
         gameScreen: document.getElementById('gameScreen'),
         congratsScreen: document.getElementById('congratsScreen'),
@@ -386,10 +414,14 @@
     function startGame() {
         initializeState();
         updateScoreDisplay();
-        elements.startScreen.style.display = 'none';
+        elements.gameContainer.style.display = 'block'; // **UPDATE**
+        elements.startScreen.style.display = 'flex';
+        elements.gameScreen.style.display = 'none';
         elements.congratsScreen.style.display = 'none';
-        elements.gameScreen.style.display = 'block';
         stopFireworks();
+        
+        elements.startScreen.style.display = 'none';
+        elements.gameScreen.style.display = 'block';
         startNewSentence();
     }
 
@@ -496,8 +528,8 @@
     }
 
     function showCongratulations() {
-        elements.gameScreen.style.display = 'none';
-        elements.congratsScreen.style.display = 'flex';
+        elements.gameContainer.style.display = 'none'; // **UPDATE**: Ẩn khung game chính
+        elements.congratsScreen.style.display = 'flex'; // **UPDATE**: Hiện màn hình chúc mừng
         
         elements.congratsMessage.innerHTML = `Chúc mừng! Bạn đã hoàn thành tất cả các câu!<br>Đạt điểm: ${state.sentencesWithPoints}/${sentences.length} câu.`;
         
@@ -510,9 +542,10 @@
         if (state.completionTimeoutId) clearTimeout(state.completionTimeoutId);
         
         stopFireworks();
-        elements.gameScreen.style.display = 'none';
-        elements.congratsScreen.style.display = 'none';
+        elements.congratsScreen.style.display = 'none'; // **UPDATE**: Ẩn màn hình chúc mừng
+        elements.gameContainer.style.display = 'block'; // **UPDATE**: Hiện lại khung game
         elements.startScreen.style.display = 'flex';
+        elements.gameScreen.style.display = 'none';
     }
 
     // --- Speech Synthesis ---
